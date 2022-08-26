@@ -44,9 +44,9 @@ function cfPerson() {
 					
 					if(!is_int($age)){
 						
-						$q = $wpdb->query("SELECT * from $table_name WHERE name='{$name}' AND age='{$age}'");
+						$q = $wpdb->query("SELECT * from $table_name WHERE name='{$name}' AND age='{$age}' and status <> false");
 							if(!$q){
-								$wpdb->query("INSERT INTO $table_name(name,age) VALUES('$name','$age')");
+								$wpdb->query("INSERT INTO $table_name(name,age,status) VALUES('$name','$age',true)");
 								echo "<script>alert('Person added');location.replace('admin.php?page=slPerson');</script>";
 							}else{
 								echo "<script>alert('Person already exists');</script>";
@@ -104,7 +104,7 @@ function cfPerson() {
 					if(!is_int($age))
 					{
 						
-						$q = $wpdb->query("SELECT * from $table_name WHERE name='{$name}' AND age='{$age}' AND id <> '{$id}'");
+						$q = $wpdb->query("SELECT * from $table_name WHERE name='{$name}' AND age='{$age}' AND id <> '{$id}' and status <> false");
 							if(!$q){
 								$wpdb->query("UPDATE $table_name SET name='$name',age='$age' WHERE id='$id'");
 								echo "<script>alert('Person Updated');location.replace('admin.php?page=slPerson');</script>";
@@ -164,7 +164,9 @@ function cfPerson() {
 	}
   }
   elseif(isset($_GET['act']) && $_GET['act']=="deletePerson"){
-	  
+	  $id = trim(@$_GET['id']);
+	  $wpdb->query("UPDATE $table_name SET status=false WHERE id='$id'");
+	  echo "<script>alert('Person Deleted');location.replace('admin.php?page=slPerson');</script>";
   }
   else{
   
@@ -175,7 +177,7 @@ function cfPerson() {
     <table class="wp-list-table widefat striped">
       <thead>
         <tr>
-          <th width="25%">ID</th>
+          <th width="25%">#</th>
           <th width="25%">Name</th>
           <th width="25%">Age</th>
           <th width="25%">Actions</th>
@@ -183,17 +185,19 @@ function cfPerson() {
       </thead>
       <tbody>
         <?php
-          $result = $wpdb->get_results("SELECT * FROM $table_name");
-          foreach ($result as $print) {
+          $result = $wpdb->get_results("SELECT * FROM $table_name WHERE status <> false");
+          $i=1;
+		  foreach ($result as $print) {
             echo "
               <tr>
-                <td width='25%'>$print->id</td>
+                <td width='25%'>{$i}</td>
                 <td width='25%'>$print->name</td>
                 <td width='25%'>$print->age</td>
                 <td width='25%'><a href='admin.php?page=slPerson&act=editPerson&id=$print->id'><button type='button'>UPDATE</button></a> <a href='admin.php?page=slPerson&act=deletePerson&id=$print->id'><button type='button'>DELETE</button></a></td>
               </tr>
             ";
-          }
+          $i++;
+		  }
         ?>
       </tbody>  
     </table>
